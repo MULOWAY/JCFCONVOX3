@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JCF CONVOX">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#007BFF">
+    <meta name="msapplication-TileColor" content="#007BFF">
+    <meta name="format-detection" content="telephone=no">
+    <title>JCF CONVOX - Plateforme Multi-Dispositifs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'electric-blue': '#007BFF',
+                        'solar-orange': '#FF6F00',
+                        'anthracite': '#424242'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Styles pour tous les appareils */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        input, textarea, select {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Optimisations mobiles */
+        @media (max-width: 768px) {
+            .modal {
+                padding: 0.5rem;
+                align-items: flex-start;
+                padding-top: 2rem;
+            }
+            
+            .modal > div {
+                max-height: calc(100vh - 4rem);
+                width: 100%;
+                margin: 0;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .text-4xl {
+                font-size: 2rem !important;
+            }
+            
+            .text-3xl {
+                font-size: 1.5rem !important;
+            }
+        }
+        
+        /* Optimisations tablettes */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+        
+        /* Optimisations desktop */
+        @media (min-width: 1025px) {
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+        }
+        
+        /* Support tactile amélioré */
+        button, .cursor-pointer {
+            min-height: 44px;
+            min-width: 44px;
+            touch-action: manipulation;
+        }
+        
+        /* Scrolling fluide sur iOS */
+        .overflow-y-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            padding: 1rem 1.5rem;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .test-option {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .test-option:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .test-option.selected {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .test-option.correct {
+            background-color: #dcfce7;
+            border-color: #16a34a;
+        }
+        
+        .test-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #dc2626;
+        }
+
+        .file-upload {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+
+        .file-upload.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Écran de connexion -->
+        <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+            <div class="w-full max-w-md">
+                <div class="bg-gradient-to-br from-electric-blue to-blue-600 text-white p-8 rounded-t-2xl text-center">
+                    <div class="mb-6">
+                        <h1 class="text-4xl font-bold mb-3">JCF CONVOX</h1>
+                        <p class="text-blue-100 text-lg">Transformons les conversations</p>
+                        <p class="text-blue-200 text-sm mt-2">Compatible Desktop • PC • Android</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-8 rounded-b-2xl shadow-2xl">
+                    <h2 class="text-2xl font-bold text-anthracite mb-6 text-center">Connexion</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="loginEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-transparent" placeholder="votre@email.com">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                            <input type="password" id="loginPassword" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-transparent" placeholder="••••••••">
+                        </div>
+                        
+                        <button onclick="login()" class="w-full bg-electric-blue text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all duration-200 transform hover:scale-105">
+                            Se connecter
+                        </button>
+                        
+                        <div class="text-center">
+                            <a href="#" onclick="resetPassword()" class="text-electric-blue text-sm hover:underline">Mot de passe oublié ?</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Comptes de test masqués - accessibles via console -->
+                    <div class="hidden" id="testAccounts">
+                        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-2">🧪 Comptes de test :</h3>
+                            <div class="text-xs text-gray-600 space-y-1">
+                                <div class="flex justify-between items-center">
+                                    <span><strong>Admin:</strong> admin@jcf.com / admin123</span>
+                                    <button onclick="quickLogin('admin')" class="text-electric-blue hover:underline">Connexion rapide</button>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span><strong>Membre:</strong> membre@jcf.com / membre123</span>
+                                    <button onclick="quickLogin('member')" class="text-electric-blue hover:underline">Connexion rapide</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interface principale -->
+        <div id="mainInterface" class="hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-electric-blue to-blue-600 text-white p-3 md:p-4">
+                <div class="max-w-7xl mx-auto flex justify-between items-center">
+                    <div class="flex-1 min-w-0">
+                        <h1 class="text-xl md:text-2xl font-bold truncate">JCF CONVOX</h1>
+                        <p class="text-blue-100 text-xs md:text-sm truncate" id="welcomeText">Bienvenue</p>
+                    </div>
+                    <div class="flex items-center space-x-2 md:space-x-4">
+                        <button onclick="showNotifications()" class="relative text-white hover:text-blue-200 p-2">
+                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z"></path>
+                            </svg>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center" id="notificationBadge">3</span>
+                        </button>
+                        <select id="languageSelect" onchange="changeLanguage()" class="bg-blue-500 text-white text-xs md:text-sm rounded px-2 md:px-3 py-1 md:py-2 border-none">
+                            <option value="fr">🇫🇷 FR</option>
+                            <option value="en">🇬🇧 EN</option>
+                            <option value="sw">🇹🇿 SW</option>
+                        </select>
+                        <button onclick="logout()" class="text-white hover:text-blue-200 p-2">
+                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="bg-white shadow-sm border-b">
+                <div class="max-w-7xl mx-auto">
+                    <nav class="flex space-x-2 md:space-x-8 px-2 md:px-4 overflow-x-auto">
+                        <button onclick="showSection('dashboard')" id="navDashboard" class="py-4 px-2 md:px-4 border-b-2 border-electric-blue text-electric-blue font-medium whitespace-nowrap text-sm md:text-base">
+                            <span class="hidden md:inline">Tableau de bord</span>
+                            <span class="md:hidden">🏠 Accueil</span>
+                        </button>
+                        <button onclick="showSection('community')" id="navCommunity" class="py-4 px-2 md:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm md:text-base">
+                            <span class="hidden md:inline">Communauté</span>
+                            <span class="md:hidden">👥 Communauté</span>
+                        </button>
+                        <button onclick="showSection('coaching')" id="navCoaching" class="py-4 px-2 md:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm md:text-base">
+                            <span class="hidden md:inline">Coaching</span>
+                            <span class="md:hidden">📚 Coaching</span>
+                        </button>
+                        <button onclick="showSection('training')" id="navTraining" class="py-4 px-2 md:px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap text-sm md:text-base">
+                            <span class="hidden md:inline">Formation</span>
+                            <span class="md:hidden">🎓 Formation</span>
+                        </button>
+                        <button onclick="showSection('admin')" id="navAdmin" class="py-4 px-2 md:px-4 border-b-2 border-transparent text-red-600 hover:text-red-700 hidden whitespace-nowrap text-sm md:text-base">
+                            <span class="hidden md:inline">Administration</span>
+                            <span class="md:hidden">🔐 Admin</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Contenu principal -->
+            <div class="max-w-7xl mx-auto p-4">
+                <div id="mainContent" class="fade-in">
+                    <!-- Le contenu sera injecté ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals et overlays -->
+    <div id="modalContainer"></div>
+    
+    <!-- Toast notifications -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // Variables globales
+        let currentUser = null;
+        let isAdmin = false;
+        let currentLanguage = 'fr';
+        let currentSection = 'dashboard';
+
+        // Données de test
+        let userStats = {
+            testsCompleted: 8,
+            certificates: 3,
+            averageScore: 85,
+            joinedDebates: 2,
+            sentMessages: 15
+        };
+
+        let notifications = [
+            { id: 1, title: 'Nouveau module disponible', content: 'Leadership Digital 2024', time: 'Il y a 2 heures', type: 'info' },
+            { id: 2, title: 'Test réussi !', content: 'Score: 85% - Innovation', time: 'Il y a 1 jour', type: 'success' },
+            { id: 3, title: 'Débat actif', content: 'Talent vs Discipline', time: 'Il y a 3 heures', type: 'info' }
+        ];
+
+        let testQuestions = [
+            {
+                id: 1,
+                question: "Quelle est la qualité la plus importante d'un leader ?",
+                options: ["L'autorité", "L'empathie", "La discipline", "La créativité"],
+                correct: 1,
+                explanation: "L'empathie permet de comprendre et motiver son équipe efficacement."
+            },
+            {
+                id: 2,
+                question: "Comment stimuler l'innovation dans une équipe ?",
+                options: ["Imposer des règles strictes", "Encourager la prise de risque", "Éviter les échecs", "Suivre les procédures"],
+                correct: 1,
+                explanation: "Encourager la prise de risque permet d'explorer de nouvelles idées."
+            },
+            {
+                id: 3,
+                question: "Quel est le meilleur moyen de gérer un conflit ?",
+                options: ["Éviter la confrontation", "Écouter toutes les parties", "Imposer sa solution", "Déléguer à un autre"],
+                correct: 1,
+                explanation: "Écouter permet de comprendre les enjeux et trouver une solution équitable."
+            },
+            {
+                id: 4,
+                question: "Qu'est-ce qui caractérise un leadership transformationnel ?",
+                options: ["Contrôler chaque détail", "Inspirer une vision commune", "Éviter les changements", "Maintenir le statu quo"],
+                correct: 1,
+                explanation: "Le leadership transformationnel inspire et motive vers une vision partagée."
+            },
+            {
+                id: 5,
+                question: "Comment établir la confiance dans une équipe ?",
+                options: ["Par la surveillance constante", "Par la transparence et la cohérence", "Par l'autorité hiérarchique", "Par les récompenses financières"],
+                correct: 1,
+                explanation: "La transparence et la cohérence dans les actions créent un climat de confiance."
+            },
+            {
+                id: 6,
+                question: "Quelle est la meilleure approche pour donner du feedback ?",
+                options: ["Critiquer publiquement", "Être spécifique et constructif", "Éviter les sujets difficiles", "Attendre l'évaluation annuelle"],
+                correct: 1,
+                explanation: "Un feedback spécifique et constructif aide à l'amélioration continue."
+            },
+            {
+                id: 7,
+                question: "Comment un leader doit-il gérer l'échec ?",
+                options: ["Blâmer l'équipe", "Apprendre et s'adapter", "Ignorer le problème", "Changer d'équipe"],
+                correct: 1,
+                explanation: "L'échec est une opportunité d'apprentissage et d'amélioration."
+            },
+            {
+                id: 8,
+                question: "Qu'est-ce qui favorise la créativité en équipe ?",
+                options: ["La pression constante", "Un environnement psychologiquement sûr", "La compétition interne", "Les deadlines serrées"],
+                correct: 1,
+                explanation: "Un environnement sûr permet l'expression libre des idées créatives."
+            },
+            {
+                id: 9,
+                question: "Comment motiver une équipe diverse ?",
+                options: ["Traiter tout le monde pareil", "Comprendre les motivations individuelles", "Imposer une seule méthode", "Éviter les différences"],
+                correct: 1,
+                explanation: "Chaque personne a des motivations uniques qu'il faut comprendre."
+            },
+            {
+                id: 10,
+                question: "Quelle est la clé d'une vision efficace ?",
+                options: ["Être complexe et détaillée", "Être claire et inspirante", "Être imposée d'en haut", "Être changée régulièrement"],
+                correct: 1,
+                explanation: "Une vision claire et inspirante mobilise et guide l'équipe."
+            },
+            {
+                id: 11,
+                question: "Comment gérer la résistance au changement ?",
+                options: ["Forcer l'adoption", "Communiquer et impliquer", "Ignorer les opposants", "Changer rapidement"],
+                correct: 1,
+                explanation: "La communication et l'implication réduisent la résistance naturelle."
+            },
+            {
+                id: 12,
+                question: "Qu'est-ce que l'intelligence émotionnelle en leadership ?",
+                options: ["Cacher ses émotions", "Comprendre et gérer les émotions", "Être toujours positif", "Éviter les conflits"],
+                correct: 1,
+                explanation: "L'intelligence émotionnelle permet de mieux comprendre et influencer."
+            },
+            {
+                id: 13,
+                question: "Comment déléguer efficacement ?",
+                options: ["Tout contrôler", "Donner autonomie et soutien", "Déléguer sans suivi", "Garder les tâches importantes"],
+                correct: 1,
+                explanation: "La délégation efficace combine autonomie et accompagnement."
+            },
+            {
+                id: 14,
+                question: "Quelle est l'importance de l'écoute active ?",
+                options: ["Perdre du temps", "Comprendre vraiment les autres", "Montrer sa supériorité", "Éviter de parler"],
+                correct: 1,
+                explanation: "L'écoute active permet une compréhension profonde et une meilleure collaboration."
+            },
+            {
+                id: 15,
+                question: "Comment développer les talents de son équipe ?",
+                options: ["Les laisser se débrouiller", "Offrir défis et formation", "Les garder dans leur zone", "Éviter les promotions"],
+                correct: 1,
+                explanation: "Les défis progressifs et la formation continue développent les compétences."
+            }
+        ];
+
+        let currentTest = {
+            questions: [],
+            currentQuestion: 0,
+            answers: [],
+            score: 0,
+            isActive: false
+        };
+
+        let chatMessages = [
+            { user: 'Marie K.', message: 'Quelqu\'un a des conseils pour le pitch de demain ?', time: 'Il y a 5 min', isOwn: false },
+            { user: 'Vous', message: 'Concentre-toi sur le problème que tu résous !', time: 'Il y a 2 min', isOwn: true },
+            { user: 'Jean M.', message: 'Merci ! C\'est exactement ce dont j\'avais besoin 🙏', time: 'À l\'instant', isOwn: false }
+        ];
+
+        let debates = [
+            { id: 1, title: 'Talent ou discipline : qu\'est-ce qui mène au succès ?', participants: 45, timeLeft: '2h', active: true, joined: false },
+            { id: 2, title: 'Créer seul ou en équipe ?', participants: 32, timeLeft: '5h', active: true, joined: false },
+            { id: 3, title: 'Innovation vs Tradition', participants: 28, timeLeft: '1j', active: true, joined: false }
+        ];
+
+        // Données administratives
+        let pendingMembers = [
+            { id: 1, name: 'Alice Dubois', email: 'alice@email.com', requestDate: '2024-01-15', status: 'pending', reason: 'Intéressée par le leadership' },
+            { id: 2, name: 'Marc Martin', email: 'marc@email.com', requestDate: '2024-01-14', status: 'pending', reason: 'Entrepreneur débutant' },
+            { id: 3, name: 'Sophie Chen', email: 'sophie@email.com', requestDate: '2024-01-13', status: 'pending', reason: 'Coach en développement' },
+            { id: 4, name: 'Paul Durand', email: 'paul@email.com', requestDate: '2024-01-12', status: 'pending', reason: 'Manager en transition' }
+        ];
+
+        let activeMembers = [
+            { id: 1, name: 'Marie Kouassi', email: 'marie@jcf.com', joinDate: '2023-12-01', role: 'Membre', status: 'active', testsCompleted: 5, certificates: 2 },
+            { id: 2, name: 'Jean Mbeki', email: 'jean@jcf.com', joinDate: '2023-11-15', role: 'Membre', status: 'active', testsCompleted: 8, certificates: 3 },
+            { id: 3, name: 'Sarah Johnson', email: 'sarah@jcf.com', joinDate: '2023-10-20', role: 'Coach', status: 'active', testsCompleted: 12, certificates: 5 },
+            { id: 4, name: 'Ahmed Hassan', email: 'ahmed@jcf.com', joinDate: '2023-09-10', role: 'Membre', status: 'active', testsCompleted: 3, certificates: 1 }
+        ];
+
+        let coaches = [
+            { id: 1, name: 'Steeve Muloway', email: 'steeve@jcf.com', speciality: 'Leadership Digital & Entrepreneuriat', rating: 4.9, students: 150, status: 'active', bio: 'Expert en transformation digitale avec 15 ans d\'expérience' },
+            { id: 2, name: 'Marie Kouadio', email: 'marie.k@jcf.com', speciality: 'Innovation & Créativité', rating: 4.8, students: 120, status: 'active', bio: 'Consultante en innovation, ancienne directrice R&D' },
+            { id: 3, name: 'David Okoye', email: 'david@jcf.com', speciality: 'Management & Leadership', rating: 4.7, students: 95, status: 'active', bio: 'Coach certifié, spécialiste du leadership africain' }
+        ];
+
+        let trainingModules = [
+            { id: 1, title: 'Leadership Digital 2024', type: 'video', duration: '2h30', coach: 'Steeve Muloway', status: 'active', participants: 45, file: null },
+            { id: 2, title: 'Innovation Stratégique', type: 'pdf', duration: '1h45', coach: 'Marie Kouadio', status: 'active', participants: 32, file: null },
+            { id: 3, title: 'Management Interculturel', type: 'video', duration: '3h15', coach: 'David Okoye', status: 'draft', participants: 0, file: null }
+        ];
+
+        let events = [
+            { id: 1, title: 'Webinaire Leadership', date: '2024-02-15', time: '14:00', coach: 'Steeve Muloway', participants: 25, maxParticipants: 50, status: 'active', description: 'Les clés du leadership moderne' },
+            { id: 2, title: 'Atelier Innovation', date: '2024-02-20', time: '16:00', coach: 'Marie Kouadio', participants: 18, maxParticipants: 30, status: 'active', description: 'Techniques d\'innovation collaborative' },
+            { id: 3, title: 'Masterclass Management', date: '2024-02-25', time: '10:00', coach: 'David Okoye', participants: 12, maxParticipants: 40, status: 'draft', description: 'Management dans un contexte multiculturel' }
+        ];
+
+        let eventRegistrations = [
+            { id: 1, eventId: 1, memberName: 'Alice Dubois', memberEmail: 'alice@email.com', registrationDate: '2024-01-16', status: 'pending' },
+            { id: 2, eventId: 1, memberName: 'Marc Martin', memberEmail: 'marc@email.com', registrationDate: '2024-01-15', status: 'pending' },
+            { id: 3, eventId: 2, memberName: 'Sophie Chen', memberEmail: 'sophie@email.com', registrationDate: '2024-01-14', status: 'approved' }
+        ];
+
+        let platformSettings = {
+            siteName: 'JCF CONVOX',
+            maxMembers: 500,
+            currentMembers: 127,
+            autoApproveMembers: false,
+            emailNotifications: true,
+            maintenanceMode: false,
+            registrationOpen: true,
+            defaultLanguage: 'fr',
+            supportedLanguages: ['fr', 'en', 'sw'],
+            certificateTemplate: 'standard',
+            testPassingScore: 70,
+            maxTestAttempts: 3,
+            sessionTimeout: 30
+        };
+
+        // Fonctions d'authentification
+        function quickLogin(type) {
+            if (type === 'admin') {
+                document.getElementById('loginEmail').value = 'admin@jcf.com';
+                document.getElementById('loginPassword').value = 'admin123';
+            } else {
+                document.getElementById('loginEmail').value = 'membre@jcf.com';
+                document.getElementById('loginPassword').value = 'membre123';
+            }
+            login();
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showToast('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            if (email === 'admin@jcf.com' && password === 'admin123') {
+                isAdmin = true;
+                currentUser = { email: email, name: 'Administrateur JCF', role: 'Admin' };
+                document.getElementById('navAdmin').classList.remove('hidden');
+            } else if (email === 'membre@jcf.com' && password === 'membre123') {
+                isAdmin = false;
+                currentUser = { email: email, name: 'Membre JCF', role: 'Membre' };
+            } else {
+                showToast('Identifiants incorrects', 'error');
+                return;
+            }
+            
+            showToast(`Bienvenue ${currentUser.name} !`, 'success');
+            showMainInterface();
+        }
+
+        function logout() {
+            currentUser = null;
+            isAdmin = false;
+            document.getElementById('mainInterface').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('navAdmin').classList.add('hidden');
+            showToast('Déconnexion réussie', 'info');
+        }
+
+        function resetPassword() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full">
+                    <h2 class="text-xl font-bold text-anthracite mb-4">🔐 Réinitialiser le mot de passe</h2>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="resetEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="votre@email.com">
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="sendResetEmail()" class="flex-1 bg-electric-blue text-white py-2 rounded-lg hover:bg-blue-600">
+                            Envoyer
+                        </button>
+                        <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        function sendResetEmail() {
+            const email = document.getElementById('resetEmail').value;
+            if (email) {
+                closeModal();
+                showToast('📧 Email de réinitialisation envoyé !', 'success');
+            } else {
+                showToast('Veuillez saisir votre email', 'error');
+            }
+        }
+
+        function showMainInterface() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainInterface').classList.remove('hidden');
+            document.getElementById('welcomeText').textContent = `Bienvenue ${currentUser.name}`;
+            showSection('dashboard');
+        }
+
+        // Navigation
+        function showSection(section) {
+            currentSection = section;
+            updateActiveNavigation(section);
+            
+            const content = generateSectionContent(section);
+            document.getElementById('mainContent').innerHTML = content;
+            document.getElementById('mainContent').classList.add('fade-in');
+        }
+
+        function updateActiveNavigation(section) {
+            const navButtons = ['navDashboard', 'navCommunity', 'navCoaching', 'navTraining', 'navAdmin'];
+            
+            navButtons.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.remove('border-electric-blue', 'text-electric-blue', 'border-red-600', 'text-red-600');
+                    element.classList.add('border-transparent', 'text-gray-500');
+                }
+            });
+            
+            const activeButton = document.getElementById(`nav${section.charAt(0).toUpperCase() + section.slice(1)}`);
+            if (activeButton) {
+                if (section === 'admin') {
+                    activeButton.classList.add('border-red-600', 'text-red-600');
+                } else {
+                    activeButton.classList.add('border-electric-blue', 'text-electric-blue');
+                }
+                activeButton.classList.remove('border-transparent', 'text-gray-500');
+            }
+        }
+
+        function generateSectionContent(section) {
+            switch (section) {
+                case 'dashboard':
+                    return generateDashboardContent();
+                case 'community':
+                    return generateCommunityContent();
+                case 'coaching':
+                    return generateCoachingContent();
+                case 'training':
+                    return generateTrainingContent();
+                case 'admin':
+                    return isAdmin ? generateAdminContent() : '<div class="text-center py-8"><p class="text-red-600">Accès non autorisé</p></div>';
+                default:
+                    return '<div class="text-center py-8"><p>Section non trouvée</p></div>';
+            }
+        }
+
+        function generateDashboardContent() {
+            return `
+                <div class="space-y-6">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-anthracite mb-2">Tableau de bord</h1>
+                        <p class="text-gray-600">Bienvenue sur votre espace personnel JCF CONVOX</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-gradient-to-br from-electric-blue to-blue-600 text-white p-6 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onclick="showSection('community')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-bold mb-2">Communauté</h3>
+                                    <p class="text-blue-100 text-sm mb-4">Rejoignez les débats</p>
+                                    <div class="bg-white text-electric-blue px-4 py-2 rounded-lg font-semibold inline-block">
+                                        Accéder
+                                    </div>
+                                </div>
+                                <div class="text-4xl opacity-20">👥</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-solar-orange to-orange-600 text-white p-6 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onclick="showSection('coaching')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-bold mb-2">Coaching</h3>
+                                    <p class="text-orange-100 text-sm mb-4">Modules experts</p>
+                                    <div class="bg-white text-solar-orange px-4 py-2 rounded-lg font-semibold inline-block">
+                                        Découvrir
+                                    </div>
+                                </div>
+                                <div class="text-4xl opacity-20">📚</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onclick="showSection('training')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-bold mb-2">Formation</h3>
+                                    <p class="text-green-100 text-sm mb-4">Tests et certificats</p>
+                                    <div class="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold inline-block">
+                                        Commencer
+                                    </div>
+                                </div>
+                                <div class="text-4xl opacity-20">🎓</div>
+                            </div>
+                        </div>
+                        
+                        ${isAdmin ? `
+                        <div class="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow" onclick="showSection('admin')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-bold mb-2">Administration</h3>
+                                    <p class="text-red-100 text-sm mb-4">Gestion plateforme</p>
+                                    <div class="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold inline-block">
+                                        Gérer
+                                    </div>
+                                </div>
+                                <div class="text-4xl opacity-20">🔐</div>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-4">📈 Vos statistiques</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                <div class="text-2xl font-bold text-electric-blue">${userStats.testsCompleted}</div>
+                                <div class="text-sm text-gray-600">Tests passés</div>
+                            </div>
+                            <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <div class="text-2xl font-bold text-green-600">${userStats.certificates}</div>
+                                <div class="text-sm text-gray-600">Certificats</div>
+                            </div>
+                            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                <div class="text-2xl font-bold text-purple-600">${userStats.averageScore}%</div>
+                                <div class="text-sm text-gray-600">Score moyen</div>
+                            </div>
+                            <div class="text-center p-4 bg-orange-50 rounded-lg">
+                                <div class="text-2xl font-bold text-orange-600">${userStats.joinedDebates}</div>
+                                <div class="text-sm text-gray-600">Débats rejoints</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-4">🔥 Actions rapides</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button onclick="startTest('leadership')" class="bg-electric-blue text-white p-4 rounded-lg hover:bg-blue-600 transition-colors">
+                                <div class="text-2xl mb-2">📝</div>
+                                <div class="font-semibold">Passer un test</div>
+                                <div class="text-sm opacity-90">Leadership Digital</div>
+                            </button>
+                            <button onclick="joinDebate(1)" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600 transition-colors">
+                                <div class="text-2xl mb-2">💬</div>
+                                <div class="font-semibold">Rejoindre un débat</div>
+                                <div class="text-sm opacity-90">Talent vs Discipline</div>
+                            </button>
+                            <button onclick="contactCoach('steeve')" class="bg-solar-orange text-white p-4 rounded-lg hover:bg-orange-600 transition-colors">
+                                <div class="text-2xl mb-2">👨‍🏫</div>
+                                <div class="font-semibold">Contacter un coach</div>
+                                <div class="text-sm opacity-90">Steeve Muloway</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateCommunityContent() {
+            return `
+                <div class="space-y-6">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-anthracite mb-2">Communauté JCF CONVOX</h1>
+                        <p class="text-gray-600">Échangez, débattez et apprenez ensemble</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-4">🔥 Débats actifs</h2>
+                        <div class="space-y-4">
+                            ${debates.map(debate => `
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onclick="joinDebate(${debate.id})">
+                                    <h4 class="font-semibold text-anthracite mb-2">${debate.title}</h4>
+                                    <div class="flex justify-between items-center text-sm text-gray-500">
+                                        <span>👥 ${debate.participants} participants</span>
+                                        <span>⏱️ ${debate.timeLeft} restantes</span>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full">${debate.joined ? 'Rejoint' : 'Actif'}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-4">💬 Chat communautaire</h2>
+                        <div class="space-y-3 mb-4 max-h-60 overflow-y-auto" id="chatContainer">
+                            ${chatMessages.map(msg => `
+                                <div class="bg-${msg.isOwn ? 'electric-blue text-white' : 'gray-100'} p-3 rounded-lg ${msg.isOwn ? 'ml-8' : ''}">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="font-semibold text-sm">${msg.user}</span>
+                                        <span class="text-xs ${msg.isOwn ? 'opacity-75' : 'text-gray-500'}">${msg.time}</span>
+                                    </div>
+                                    <p class="text-sm">${msg.message}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="text" id="chatInput" placeholder="Tapez votre message..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-electric-blue">
+                            <button onclick="sendChatMessage()" class="bg-electric-blue text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                Envoyer
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+                        <h3 class="font-bold text-green-800 mb-4 text-lg">🔗 Liens vers les forums JCF</h3>
+                        <div class="space-y-3">
+                            <a href="https://chat.whatsapp.com/JCFForumLink" target="_blank" class="flex items-center space-x-3 bg-green-500 text-white p-4 rounded-lg hover:bg-green-600 transition-colors">
+                                <span class="text-2xl">📱</span>
+                                <div>
+                                    <span class="font-semibold block">WhatsApp JCF</span>
+                                    <span class="text-sm opacity-90">Discussions instantanées</span>
+                                </div>
+                            </a>
+                            <a href="https://t.me/JCFForumLink" target="_blank" class="flex items-center space-x-3 bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition-colors">
+                                <span class="text-2xl">✈️</span>
+                                <div>
+                                    <span class="font-semibold block">Telegram JCF</span>
+                                    <span class="text-sm opacity-90">Canal officiel</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateCoachingContent() {
+            return `
+                <div class="space-y-6">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-anthracite mb-2">Coaching Personnel</h1>
+                        <p class="text-gray-600">Développez vos compétences avec nos experts</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-6">📚 Modules de coaching</h2>
+                        <div class="space-y-4">
+                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-semibold text-lg">Leadership & Management</h3>
+                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Disponible</span>
+                                </div>
+                                <p class="text-gray-600 mb-4">Développez vos compétences de leader et apprenez à manager efficacement.</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm text-gray-500">
+                                        <span>⏱️ 8 heures</span> • <span>📊 5 modules</span> • <span>🎓 Certificat</span>
+                                    </div>
+                                    <button onclick="startCoaching('leadership')" class="bg-solar-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600">
+                                        Commencer
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-semibold text-lg">Innovation & Créativité</h3>
+                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Disponible</span>
+                                </div>
+                                <p class="text-gray-600 mb-4">Stimulez votre potentiel créatif et les méthodes d'innovation.</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm text-gray-500">
+                                        <span>⏱️ 6 heures</span> • <span>📊 4 modules</span> • <span>🎓 Certificat</span>
+                                    </div>
+                                    <button onclick="startCoaching('innovation')" class="bg-solar-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600">
+                                        Commencer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-6">👨‍🏫 Nos coachs experts</h2>
+                        <div class="space-y-4">
+                            ${coaches.map(coach => `
+                                <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                                    <div class="w-16 h-16 bg-electric-blue rounded-full flex items-center justify-center text-white font-bold text-xl">${coach.name.split(' ').map(n => n[0]).join('')}</div>
+                                    <div class="flex-1">
+                                        <h3 class="font-semibold text-lg">${coach.name}</h3>
+                                        <p class="text-gray-600 mb-2">${coach.speciality}</p>
+                                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                            <span class="text-yellow-400">⭐⭐⭐⭐⭐ (${coach.rating}/5)</span>
+                                            <span>👥 ${coach.students}+ étudiants</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="contactCoach('${coach.name.toLowerCase().replace(' ', '')}')" class="bg-electric-blue text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">
+                                        Contacter
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateTrainingContent() {
+            return `
+                <div class="space-y-6">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-anthracite mb-2">Formation & Certification</h1>
+                        <p class="text-gray-600">Testez vos connaissances et obtenez vos certificats</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-6">
+                        <h3 class="font-bold text-lg mb-2">🎯 Test de certification disponible</h3>
+                        <p class="opacity-90 mb-4">Testez vos connaissances en Leadership Digital</p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm opacity-75">
+                                <span>📝 15 questions</span> • <span>⏱️ 25 minutes</span> • <span>🎓 Certificat personnalisé si réussi</span>
+                            </div>
+                            <button onclick="startTest('leadership')" class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100">
+                                Commencer le test
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-4">📊 Vos résultats</h2>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                <div>
+                                    <p class="font-medium">Test Leadership Digital</p>
+                                    <p class="text-sm text-gray-600">Passé le 10 Jan 2024</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-green-600">85%</p>
+                                    <p class="text-xs text-green-600">Réussi ✓</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                                <div>
+                                    <p class="font-medium">Test Innovation</p>
+                                    <p class="text-sm text-gray-600">Passé le 5 Jan 2024</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-blue-600">92%</p>
+                                    <p class="text-xs text-blue-600">Excellent ✓</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-4">🏆 Vos certificats</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white border-2 border-green-200 rounded-lg p-6 text-center">
+                                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h4 class="font-bold text-lg mb-2">Leadership Digital</h4>
+                                <p class="text-gray-600 text-sm mb-3">Obtenu le 10 Jan 2024</p>
+                                <p class="text-green-600 font-semibold mb-4">Score: 85%</p>
+                                <button onclick="downloadCertificate('leadership')" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+                                    📥 Télécharger PDF
+                                </button>
+                            </div>
+                            
+                            <div class="bg-white border-2 border-blue-200 rounded-lg p-6 text-center">
+                                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h4 class="font-bold text-lg mb-2">Innovation</h4>
+                                <p class="text-gray-600 text-sm mb-3">Obtenu le 5 Jan 2024</p>
+                                <p class="text-blue-600 font-semibold mb-4">Score: 92%</p>
+                                <button onclick="downloadCertificate('innovation')" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                                    📥 Télécharger PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateAdminContent() {
+            return `
+                <div class="space-y-6">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-red-600 mb-2">🔐 Administration</h1>
+                        <p class="text-gray-600">Gestion complète de la plateforme JCF CONVOX</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center cursor-pointer hover:bg-blue-100" onclick="showMembersManagement()">
+                            <div class="text-2xl font-bold text-blue-600">${activeMembers.length}</div>
+                            <div class="text-sm text-blue-600">Membres actifs</div>
+                        </div>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center cursor-pointer hover:bg-yellow-100" onclick="showPendingMembers()">
+                            <div class="text-2xl font-bold text-yellow-600">${pendingMembers.length}</div>
+                            <div class="text-sm text-yellow-600">En attente</div>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center cursor-pointer hover:bg-green-100" onclick="showEventsManagement()">
+                            <div class="text-2xl font-bold text-green-600">${events.length}</div>
+                            <div class="text-sm text-green-600">Événements</div>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center cursor-pointer hover:bg-purple-100" onclick="showCoachesManagement()">
+                            <div class="text-2xl font-bold text-purple-600">${coaches.length}</div>
+                            <div class="text-sm text-purple-600">Coachs</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-xl font-bold text-anthracite mb-4">⚡ Actions rapides</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <button onclick="showMembersManagement()" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition-colors">
+                                <div class="text-2xl mb-2">👥</div>
+                                <div class="font-semibold">Gérer les membres</div>
+                                <div class="text-sm opacity-90">${pendingMembers.length} demandes en attente</div>
+                            </button>
+                            <button onclick="showEventsManagement()" class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600 transition-colors">
+                                <div class="text-2xl mb-2">📅</div>
+                                <div class="font-semibold">Événements</div>
+                                <div class="text-sm opacity-90">Créer et gérer</div>
+                            </button>
+                            <button onclick="showPlatformSettings()" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600 transition-colors">
+                                <div class="text-2xl mb-2">⚙️</div>
+                                <div class="font-semibold">Paramètres</div>
+                                <div class="text-sm opacity-90">Configuration</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fonctions de gestion des membres
+        function showMembersManagement() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-anthracite">👥 Gestion des membres</h2>
+                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex space-x-4 mb-4">
+                            <button onclick="showActiveMembers()" id="activeMembersTab" class="px-4 py-2 bg-blue-500 text-white rounded-lg">
+                                Membres actifs (${activeMembers.length})
+                            </button>
+                            <button onclick="showPendingMembers()" id="pendingMembersTab" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">
+                                En attente (${pendingMembers.length})
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="membersContent">
+                        ${generateActiveMembersTable()}
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        function generateActiveMembersTable() {
+            return `
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 px-4 py-2 text-left">Nom</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Email</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Rôle</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Date d'inscription</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Tests</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activeMembers.map(member => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="border border-gray-300 px-4 py-2 font-medium">${member.name}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${member.email}</td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <span class="px-2 py-1 text-xs rounded-full ${member.role === 'Coach' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">${member.role}</span>
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">${member.joinDate}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${member.testsCompleted} / ${member.certificates} 🏆</td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <div class="flex space-x-2">
+                                            <button onclick="editMember(${member.id})" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
+                                                Modifier
+                                            </button>
+                                            <button onclick="deleteMember(${member.id})" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
+                                                Supprimer
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function showActiveMembers() {
+            document.getElementById('activeMembersTab').className = 'px-4 py-2 bg-blue-500 text-white rounded-lg';
+            document.getElementById('pendingMembersTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('membersContent').innerHTML = generateActiveMembersTable();
+        }
+
+        function showPendingMembers() {
+            document.getElementById('activeMembersTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('pendingMembersTab').className = 'px-4 py-2 bg-blue-500 text-white rounded-lg';
+            document.getElementById('membersContent').innerHTML = generatePendingMembersTable();
+        }
+
+        function generatePendingMembersTable() {
+            return `
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 px-4 py-2 text-left">Nom</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Email</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Date de demande</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Raison</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pendingMembers.map(member => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="border border-gray-300 px-4 py-2 font-medium">${member.name}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${member.email}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${member.requestDate}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${member.reason}</td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <div class="flex space-x-2">
+                                            <button onclick="approveMember(${member.id})" class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">
+                                                Approuver
+                                            </button>
+                                            <button onclick="rejectMember(${member.id})" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
+                                                Rejeter
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function approveMember(memberId) {
+            const member = pendingMembers.find(m => m.id === memberId);
+            if (member) {
+                activeMembers.push({
+                    id: activeMembers.length + 1,
+                    name: member.name,
+                    email: member.email,
+                    joinDate: new Date().toISOString().split('T')[0],
+                    role: 'Membre',
+                    status: 'active',
+                    testsCompleted: 0,
+                    certificates: 0
+                });
+                
+                pendingMembers.splice(pendingMembers.findIndex(m => m.id === memberId), 1);
+                platformSettings.currentMembers++;
+                
+                showToast(`✅ ${member.name} a été approuvé et ajouté aux membres actifs`, 'success');
+                showPendingMembers();
+            }
+        }
+
+        function rejectMember(memberId) {
+            const member = pendingMembers.find(m => m.id === memberId);
+            if (member) {
+                pendingMembers.splice(pendingMembers.findIndex(m => m.id === memberId), 1);
+                showToast(`❌ Demande de ${member.name} rejetée`, 'info');
+                showPendingMembers();
+            }
+        }
+
+        function editMember(memberId) {
+            const member = activeMembers.find(m => m.id === memberId);
+            if (member) {
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-xl p-6 max-w-md w-full">
+                        <h3 class="text-xl font-bold text-anthracite mb-4">✏️ Modifier le membre</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                                <input type="text" id="editName" value="${member.name}" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="editEmail" value="${member.email}" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Rôle</label>
+                                <select id="editRole" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="Membre" ${member.role === 'Membre' ? 'selected' : ''}>Membre</option>
+                                    <option value="Coach" ${member.role === 'Coach' ? 'selected' : ''}>Coach</option>
+                                    <option value="Admin" ${member.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button onclick="saveMemberChanges(${member.id})" class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                                Sauvegarder
+                            </button>
+                            <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('modalContainer').appendChild(modal);
+            }
+        }
+
+        function saveMemberChanges(memberId) {
+            const member = activeMembers.find(m => m.id === memberId);
+            if (member) {
+                member.name = document.getElementById('editName').value;
+                member.email = document.getElementById('editEmail').value;
+                member.role = document.getElementById('editRole').value;
+                
+                showToast(`✅ Informations de ${member.name} mises à jour`, 'success');
+                closeModal();
+                showActiveMembers();
+            }
+        }
+
+        function deleteMember(memberId) {
+            const member = activeMembers.find(m => m.id === memberId);
+            if (member && confirm(`Êtes-vous sûr de vouloir supprimer ${member.name} ?`)) {
+                activeMembers.splice(activeMembers.findIndex(m => m.id === memberId), 1);
+                platformSettings.currentMembers--;
+                showToast(`🗑️ ${member.name} a été supprimé`, 'info');
+                showActiveMembers();
+            }
+        }
+
+        // Fonctions de gestion des événements
+        function showEventsManagement() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-anthracite">📅 Gestion des événements</h2>
+                        <div class="flex space-x-3">
+                            <button onclick="addNewEvent()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                                + Nouvel événement
+                            </button>
+                            <button onclick="addNewModule()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                + Nouveau module
+                            </button>
+                            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex space-x-4 mb-4">
+                            <button onclick="showEventsTab()" id="eventsTab" class="px-4 py-2 bg-blue-500 text-white rounded-lg">
+                                Événements (${events.length})
+                            </button>
+                            <button onclick="showModulesTab()" id="modulesTab" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">
+                                Modules (${trainingModules.length})
+                            </button>
+                            <button onclick="showRegistrationsTab()" id="registrationsTab" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">
+                                Inscriptions (${eventRegistrations.length})
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="eventsContent">
+                        ${generateEventsTable()}
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        function generateEventsTable() {
+            return `
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 px-4 py-2 text-left">Titre</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Date</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Coach</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Participants</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Statut</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${events.map(event => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="border border-gray-300 px-4 py-2 font-medium">${event.title}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${event.date} ${event.time}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${event.coach}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${event.participants}/${event.maxParticipants}</td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <span class="px-2 py-1 text-xs rounded-full ${event.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">${event.status}</span>
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <div class="flex space-x-2">
+                                            <button onclick="editEvent(${event.id})" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
+                                                Modifier
+                                            </button>
+                                            <button onclick="deleteEvent(${event.id})" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
+                                                Supprimer
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function showEventsTab() {
+            document.getElementById('eventsTab').className = 'px-4 py-2 bg-blue-500 text-white rounded-lg';
+            document.getElementById('modulesTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('registrationsTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('eventsContent').innerHTML = generateEventsTable();
+        }
+
+        function showModulesTab() {
+            document.getElementById('eventsTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('modulesTab').className = 'px-4 py-2 bg-blue-500 text-white rounded-lg';
+            document.getElementById('registrationsTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('eventsContent').innerHTML = generateModulesTable();
+        }
+
+        function showRegistrationsTab() {
+            document.getElementById('eventsTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('modulesTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('registrationsTab').className = 'px-4 py-2 bg-blue-500 text-white rounded-lg';
+            document.getElementById('eventsContent').innerHTML = generateRegistrationsTable();
+        }
+
+        function generateModulesTable() {
+            return `
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 px-4 py-2 text-left">Titre</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Type</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Durée</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Coach</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Participants</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Statut</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${trainingModules.map(module => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="border border-gray-300 px-4 py-2 font-medium">${module.title}</td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <span class="px-2 py-1 text-xs rounded-full ${module.type === 'video' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
+                                            ${module.type === 'video' ? '🎥 Vidéo' : '📄 PDF'}
+                                        </span>
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">${module.duration}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${module.coach}</td>
+                                    <td class="border border-gray-300 px-4 py-2">${module.participants}</td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <span class="px-2 py-1 text-xs rounded-full ${module.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">${module.status}</span>
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <div class="flex space-x-2">
+                                            <button onclick="editModule(${module.id})" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
+                                                Modifier
+                                            </button>
+                                            <button onclick="deleteModule(${module.id})" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
+                                                Supprimer
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function generateRegistrationsTable() {
+            return `
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 px-4 py-2 text-left">Participant</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Email</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Événement</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Date d'inscription</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Statut</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${eventRegistrations.map(registration => {
+                                const event = events.find(e => e.id === registration.eventId);
+                                return `
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border border-gray-300 px-4 py-2 font-medium">${registration.memberName}</td>
+                                        <td class="border border-gray-300 px-4 py-2">${registration.memberEmail}</td>
+                                        <td class="border border-gray-300 px-4 py-2">${event ? event.title : 'Événement supprimé'}</td>
+                                        <td class="border border-gray-300 px-4 py-2">${registration.registrationDate}</td>
+                                        <td class="border border-gray-300 px-4 py-2">
+                                            <span class="px-2 py-1 text-xs rounded-full ${registration.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${registration.status === 'approved' ? 'Approuvé' : 'En attente'}</span>
+                                        </td>
+                                        <td class="border border-gray-300 px-4 py-2">
+                                            <div class="flex space-x-2">
+                                                ${registration.status === 'pending' ? `
+                                                    <button onclick="approveRegistration(${registration.id})" class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">
+                                                        Approuver
+                                                    </button>
+                                                    <button onclick="rejectRegistration(${registration.id})" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
+                                                        Rejeter
+                                                    </button>
+                                                ` : `
+                                                    <button onclick="cancelRegistration(${registration.id})" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
+                                                        Annuler
+                                                    </button>
+                                                `}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function addNewEvent() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full">
+                    <h3 class="text-xl font-bold text-anthracite mb-4">📅 Nouvel événement</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+                            <input type="text" id="newEventTitle" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Titre de l'événement">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <input type="date" id="newEventDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Heure</label>
+                            <input type="time" id="newEventTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Coach</label>
+                            <select id="newEventCoach" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                ${coaches.map(coach => `<option value="${coach.name}">${coach.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre max de participants</label>
+                            <input type="number" id="newEventMaxParticipants" class="w-full px-3 py-2 border border-gray-300 rounded-lg" value="50">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                            <textarea id="newEventDescription" class="w-full px-3 py-2 border border-gray-300 rounded-lg" rows="3" placeholder="Description de l'événement"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button onclick="saveNewEvent()" class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+                            Créer l'événement
+                        </button>
+                        <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        function saveNewEvent() {
+            const newEvent = {
+                id: events.length + 1,
+                title: document.getElementById('newEventTitle').value,
+                date: document.getElementById('newEventDate').value,
+                time: document.getElementById('newEventTime').value,
+                coach: document.getElementById('newEventCoach').value,
+                participants: 0,
+                maxParticipants: parseInt(document.getElementById('newEventMaxParticipants').value),
+                status: 'active',
+                description: document.getElementById('newEventDescription').value
+            };
+            
+            if (newEvent.title && newEvent.date && newEvent.time) {
+                events.push(newEvent);
+                showToast(`✅ Événement "${newEvent.title}" créé avec succès`, 'success');
+                closeModal();
+                showEventsTab();
+            } else {
+                showToast('❌ Veuillez remplir tous les champs obligatoires', 'error');
+            }
+        }
+
+        function addNewModule() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full">
+                    <h3 class="text-xl font-bold text-anthracite mb-4">📚 Nouveau module</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+                            <input type="text" id="newModuleTitle" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Titre du module">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                            <select id="newModuleType" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="video">🎥 Vidéo</option>
+                                <option value="pdf">📄 PDF</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Durée</label>
+                            <input type="text" id="newModuleDuration" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="ex: 2h30">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Coach</label>
+                            <select id="newModuleCoach" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                ${coaches.map(coach => `<option value="${coach.name}">${coach.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fichier</label>
+                            <div class="file-upload" id="fileUpload">
+                                <input type="file" id="moduleFile" accept=".pdf,.mp4,.mov,.avi" class="hidden" onchange="handleFileUpload(this)">
+                                <div class="text-center">
+                                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="text-gray-600 mb-2">Cliquez pour sélectionner un fichier</p>
+                                    <p class="text-sm text-gray-500">PDF, MP4, MOV, AVI (max 100MB)</p>
+                                </div>
+                            </div>
+                            <div id="fileInfo" class="hidden mt-2 p-2 bg-blue-50 rounded text-sm text-blue-800"></div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button onclick="saveNewModule()" class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                            Créer le module
+                        </button>
+                        <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalContainer').appendChild(modal);
+            
+            // Ajouter les événements pour le drag & drop
+            const fileUpload = document.getElementById('fileUpload');
+            fileUpload.addEventListener('click', () => document.getElementById('moduleFile').click());
+            fileUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUpload.classList.add('dragover');
+            });
+            fileUpload.addEventListener('dragleave', () => {
+                fileUpload.classList.remove('dragover');
+            });
+            fileUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUpload.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('moduleFile').files = files;
+                    handleFileUpload(document.getElementById('moduleFile'));
+                }
+            });
+        }
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.innerHTML = `📁 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileInfo.classList.remove('hidden');
+            }
+        }
+
+        function saveNewModule() {
+            const newModule = {
+                id: trainingModules.length + 1,
+                title: document.getElementById('newModuleTitle').value,
+                type: document.getElementById('newModuleType').value,
+                duration: document.getElementById('newModuleDuration').value,
+                coach: document.getElementById('newModuleCoach').value,
+                status: 'active',
+                participants: 0,
+                file: document.getElementById('moduleFile').files[0] || null
+            };
+            
+            if (newModule.title && newModule.duration) {
+                trainingModules.push(newModule);
+                showToast(`✅ Module "${newModule.title}" créé avec succès`, 'success');
+                closeModal();
+                showModulesTab();
+            } else {
+                showToast('❌ Veuillez remplir tous les champs obligatoires', 'error');
+            }
+        }
+
+        function approveRegistration(registrationId) {
+            const registration = eventRegistrations.find(r => r.id === registrationId);
+            if (registration) {
+                registration.status = 'approved';
+                const event = events.find(e => e.id === registration.eventId);
+                if (event) {
+                    event.participants++;
+                }
+                showToast(`✅ Inscription de ${registration.memberName} approuvée`, 'success');
+                showRegistrationsTab();
+            }
+        }
+
+        function rejectRegistration(registrationId) {
+            const registration = eventRegistrations.find(r => r.id === registrationId);
+            if (registration) {
+                eventRegistrations.splice(eventRegistrations.findIndex(r => r.id === registrationId), 1);
+                showToast(`❌ Inscription de ${registration.memberName} rejetée`, 'info');
+                showRegistrationsTab();
+            }
+        }
+
+        function cancelRegistration(registrationId) {
+            const registration = eventRegistrations.find(r => r.id === registrationId);
+            if (registration) {
+                const event = events.find(e => e.id === registration.eventId);
+                if (event && registration.status === 'approved') {
+                    event.participants--;
+                }
+                eventRegistrations.splice(eventRegistrations.findIndex(r => r.id === registrationId), 1);
+                showToast(`🗑️ Inscription de ${registration.memberName} annulée`, 'info');
+                showRegistrationsTab();
+            }
+        }
+
+        // Fonctions de gestion des paramètres
+        function showPlatformSettings() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-anthracite">⚙️ Paramètres de la plateforme</h2>
+                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-anthracite">🏢 Informations générales</h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom du site</label>
+                                <input type="text" id="siteName" value="${platformSettings.siteName}" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre maximum de membres</label>
+                                <input type="number" id="maxMembers" value="${platformSettings.maxMembers}" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Langue par défaut</label>
+                                <select id="defaultLanguage" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="fr" ${platformSettings.defaultLanguage === 'fr' ? 'selected' : ''}>🇫🇷 Français</option>
+                                    <option value="en" ${platformSettings.defaultLanguage === 'en' ? 'selected' : ''}>🇬🇧 Anglais</option>
+                                    <option value="sw" ${platformSettings.defaultLanguage === 'sw' ? 'selected' : ''}>🇹🇿 Swahili</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-anthracite">👥 Gestion des membres</h3>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="autoApproveMembers" ${platformSettings.autoApproveMembers ? 'checked' : ''} class="rounded">
+                                <label for="autoApproveMembers" class="text-sm text-gray-700">Approuver automatiquement les nouveaux membres</label>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="registrationOpen" ${platformSettings.registrationOpen ? 'checked' : ''} class="rounded">
+                                <label for="registrationOpen" class="text-sm text-gray-700">Autoriser les nouvelles inscriptions</label>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="emailNotifications" ${platformSettings.emailNotifications ? 'checked' : ''} class="rounded">
+                                <label for="emailNotifications" class="text-sm text-gray-700">Notifications par email</label>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-anthracite">🎓 Paramètres des tests</h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Score minimum pour réussir (%)</label>
+                                <input type="number" id="testPassingScore" value="${platformSettings.testPassingScore}" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre maximum de tentatives</label>
+                                <input type="number" id="maxTestAttempts" value="${platformSettings.maxTestAttempts}" min="1" max="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Modèle de certificat</label>
+                                <select id="certificateTemplate" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="standard" ${platformSettings.certificateTemplate === 'standard' ? 'selected' : ''}>Standard</option>
+                                    <option value="premium" ${platformSettings.certificateTemplate === 'premium' ? 'selected' : ''}>Premium</option>
+                                    <option value="custom" ${platformSettings.certificateTemplate === 'custom' ? 'selected' : ''}>Personnalisé</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-anthracite">🔧 Paramètres système</h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Timeout de session (minutes)</label>
+                                <input type="number" id="sessionTimeout" value="${platformSettings.sessionTimeout}" min="5" max="120" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="maintenanceMode" ${platformSettings.maintenanceMode ? 'checked' : ''} class="rounded">
+                                <label for="maintenanceMode" class="text-sm text-gray-700">Mode maintenance</label>
+                            </div>
+                            <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <h4 class="font-semibold text-red-800 mb-2">⚠️ Zone dangereuse</h4>
+                                <button onclick="resetPlatform()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm">
+                                    Réinitialiser la plateforme
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <div class="text-sm text-gray-500">
+                            <p>Membres actuels: ${platformSettings.currentMembers}/${platformSettings.maxMembers}</p>
+                            <p>Dernière sauvegarde: ${new Date().toLocaleString()}</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button onclick="savePlatformSettings()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600">
+                                💾 Sauvegarder
+                            </button>
+                            <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        function savePlatformSettings() {
+            platformSettings.siteName = document.getElementById('siteName').value;
+            platformSettings.maxMembers = parseInt(document.getElementById('maxMembers').value);
+            platformSettings.defaultLanguage = document.getElementById('defaultLanguage').value;
+            platformSettings.autoApproveMembers = document.getElementById('autoApproveMembers').checked;
+            platformSettings.registrationOpen = document.getElementById('registrationOpen').checked;
+            platformSettings.emailNotifications = document.getElementById('emailNotifications').checked;
+            platformSettings.testPassingScore = parseInt(document.getElementById('testPassingScore').value);
+            platformSettings.maxTestAttempts = parseInt(document.getElementById('maxTestAttempts').value);
+            platformSettings.certificateTemplate = document.getElementById('certificateTemplate').value;
+            platformSettings.sessionTimeout = parseInt(document.getElementById('sessionTimeout').value);
+            platformSettings.maintenanceMode = document.getElementById('maintenanceMode').checked;
+            
+            showToast('✅ Paramètres sauvegardés avec succès', 'success');
+            closeModal();
+        }
+
+        function resetPlatform() {
+            if (confirm('⚠️ ATTENTION: Cette action va supprimer toutes les données de la plateforme. Êtes-vous absolument sûr ?')) {
+                if (confirm('🚨 DERNIÈRE CHANCE: Toutes les données seront perdues définitivement. Continuer ?')) {
+                    // Reset des données
+                    activeMembers.length = 0;
+                    pendingMembers.length = 0;
+                    events.length = 0;
+                    trainingModules.length = 0;
+                    eventRegistrations.length = 0;
+                    
+                    platformSettings.currentMembers = 0;
+                    
+                    showToast('🔄 Plateforme réinitialisée', 'info');
+                    closeModal();
+                    showSection('admin');
+                }
+            }
+        }
+
+        // Fonctions interactives existantes
+        function showNotifications() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-lg w-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-anthracite">🔔 Notifications</h2>
+                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    </div>
+                    
+                    <div class="space-y-3 mb-4">
+                        ${notifications.map(notif => `
+                            <div class="p-3 bg-${notif.type === 'success' ? 'green' : notif.type === 'error' ? 'red' : 'blue'}-50 border border-${notif.type === 'success' ? 'green' : notif.type === 'error' ? 'red' : 'blue'}-200 rounded-lg">
+                                <p class="text-sm font-medium text-${notif.type === 'success' ? 'green' : notif.type === 'error' ? 'red' : 'blue'}-800">${notif.title}</p>
+                                <p class="text-xs text-${notif.type === 'success' ? 'green' : notif.type === 'error' ? 'red' : 'blue'}-600 mt-1">${notif.content}</p>
+                                <p class="text-xs text-gray-500 mt-1">${notif.time}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button onclick="markAllAsRead()" class="w-full bg-electric-blue text-white py-2 rounded-lg hover:bg-blue-600">
+                        Tout marquer comme lu
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        function markAllAsRead() {
+            notifications = [];
+            document.getElementById('notificationBadge').textContent = '0';
+            closeModal();
+            showToast('✅ Notifications marquées comme lues', 'success');
+        }
+
+        function startTest(type) {
+            currentTest = {
+                questions: [...testQuestions],
+                currentQuestion: 0,
+                answers: [],
+                score: 0,
+                isActive: true
+            };
+            
+            showTestQuestion();
+        }
+
+        function showTestQuestion() {
+            if (currentTest.currentQuestion >= currentTest.questions.length) {
+                showTestResults();
+                return;
+            }
+            
+            const question = currentTest.questions[currentTest.currentQuestion];
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-2xl w-full">
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-anthracite">📝 Test Leadership Digital</h2>
+                            <span class="text-sm text-gray-500">Question ${currentTest.currentQuestion + 1}/${currentTest.questions.length}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-electric-blue h-2 rounded-full" style="width: ${((currentTest.currentQuestion + 1) / currentTest.questions.length) * 100}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-4">${question.question}</h3>
+                        <div class="space-y-3">
+                            ${question.options.map((option, index) => `
+                                <div class="test-option border border-gray-300 rounded-lg p-3 cursor-pointer hover:bg-gray-50" onclick="selectAnswer(${index})">
+                                    <label class="cursor-pointer flex items-center">
+                                        <input type="radio" name="answer" value="${index}" class="mr-3">
+                                        <span>${option}</span>
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Annuler
+                        </button>
+                        <button onclick="nextQuestion()" id="nextBtn" class="bg-electric-blue text-white px-6 py-2 rounded-lg hover:bg-blue-600 opacity-50 cursor-not-allowed" disabled>
+                            ${currentTest.currentQuestion === currentTest.questions.length - 1 ? 'Terminer' : 'Suivant'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        function selectAnswer(answerIndex) {
+            const options = document.querySelectorAll('.test-option');
+            options.forEach((option, index) => {
+                option.classList.remove('selected');
+                if (index === answerIndex) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            nextBtn.disabled = false;
+            
+            currentTest.answers[currentTest.currentQuestion] = answerIndex;
+        }
+
+        function nextQuestion() {
+            const question = currentTest.questions[currentTest.currentQuestion];
+            const userAnswer = currentTest.answers[currentTest.currentQuestion];
+            
+            if (userAnswer === question.correct) {
+                currentTest.score++;
+            }
+            
+            currentTest.currentQuestion++;
+            closeModal();
+            
+            setTimeout(() => {
+                showTestQuestion();
+            }, 300);
+        }
+
+        function showTestResults() {
+            const percentage = Math.round((currentTest.score / currentTest.questions.length) * 100);
+            const passed = percentage >= platformSettings.testPassingScore;
+            
+            if (passed) {
+                userStats.testsCompleted++;
+                userStats.certificates++;
+                userStats.averageScore = Math.round((userStats.averageScore + percentage) / 2);
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full text-center">
+                    <div class="mb-6">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${passed ? 'bg-green-500' : 'bg-red-500'}">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${passed ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' : 'M6 18L18 6M6 6l12 12'}"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold ${passed ? 'text-green-600' : 'text-red-600'} mb-2">
+                            ${passed ? '🎉 Félicitations !' : '😔 Pas encore...'}
+                        </h2>
+                        <p class="text-gray-600">
+                            ${passed ? 'Vous avez réussi le test !' : 'Vous pouvez réessayer'}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="text-4xl font-bold ${passed ? 'text-green-600' : 'text-red-600'} mb-2">
+                            ${percentage}%
+                        </div>
+                        <p class="text-gray-600">
+                            ${currentTest.score}/${currentTest.questions.length} bonnes réponses
+                        </p>
+                        <p class="text-sm text-gray-500 mt-2">
+                            ${passed ? `Score requis: ${platformSettings.testPassingScore}%` : `Score requis: ${platformSettings.testPassingScore}% (réessayez !)`}
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        ${passed ? `
+                            <button onclick="downloadCertificate('leadership')" class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+                                🏆 Voir et télécharger le certificat
+                            </button>
+                        ` : `
+                            <button onclick="retakeTest()" class="w-full bg-electric-blue text-white py-3 rounded-lg hover:bg-blue-600">
+                                🔄 Repasser le test
+                            </button>
+                        `}
+                        <button onclick="closeModal()" class="w-full border border-gray-300 py-3 rounded-lg hover:bg-gray-50">
+                            Fermer
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContainer').appendChild(modal);
+            currentTest.isActive = false;
+        }
+
+        function retakeTest() {
+            closeModal();
+            setTimeout(() => {
+                startTest('leadership');
+            }, 300);
+        }
+
+        function downloadCertificate(type) {
+            showCertificatePreview(type);
+        }
+
+        function showCertificatePreview(type) {
+            const userName = currentUser.name;
+            const currentDate = new Date().toLocaleDateString('fr-FR');
+            const certificateNumber = `JCF-${type.toUpperCase()}-${Date.now()}`;
+            const score = type === 'leadership' ? '85%' : '92%';
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-anthracite">🏆 Aperçu de votre certificat</h2>
+                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    </div>
+                    
+                    <div id="certificatePreview" class="bg-gradient-to-br from-blue-50 to-indigo-100 p-8 rounded-xl border-4 border-yellow-400 shadow-2xl mb-6">
+                        <div class="text-center">
+                            <!-- En-tête avec logo -->
+                            <div class="mb-6">
+                                <div class="w-20 h-20 bg-gradient-to-br from-electric-blue to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span class="text-white font-bold text-2xl">JCF</span>
+                                </div>
+                                <h1 class="text-3xl font-bold text-electric-blue mb-2">JCF CONVOX</h1>
+                                <p class="text-gray-600 text-lg">Certificat de Réussite</p>
+                            </div>
+                            
+                            <!-- Contenu principal -->
+                            <div class="mb-8">
+                                <p class="text-lg text-gray-700 mb-4">Certifie par les présentes que</p>
+                                <h2 class="text-4xl font-bold text-anthracite mb-6 border-b-2 border-yellow-400 pb-2 inline-block">${userName}</h2>
+                                <p class="text-lg text-gray-700 mb-4">a réussi avec succès le test de certification</p>
+                                <h3 class="text-2xl font-semibold text-electric-blue mb-6">${type === 'leadership' ? 'Leadership Digital' : 'Innovation & Créativité'}</h3>
+                                <p class="text-lg text-gray-700 mb-2">avec un score de</p>
+                                <div class="text-3xl font-bold text-green-600 mb-6">${score}</div>
+                            </div>
+                            
+                            <!-- Informations du certificat -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-sm text-gray-600">
+                                <div>
+                                    <p class="font-semibold">Date d'obtention</p>
+                                    <p>${currentDate}</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Numéro de certificat</p>
+                                    <p>${certificateNumber}</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Validité</p>
+                                    <p>Permanente</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Signature -->
+                            <div class="flex justify-between items-end">
+                                <div class="text-left">
+                                    <div class="border-t-2 border-gray-400 pt-2 w-48">
+                                        <p class="font-semibold text-gray-700">Steeve Muloway</p>
+                                        <p class="text-sm text-gray-600">Directeur JCF CONVOX</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold text-xs">OFFICIEL</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button onclick="downloadCertificatePDF('${type}')" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 font-semibold">
+                            📥 Télécharger en PDF
+                        </button>
+                        <button onclick="shareCertificate('${type}')" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 font-semibold">
+                            📤 Partager
+                        </button>
+                        <button onclick="closeModal()" class="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50">
+                            Fermer
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContainer').appendChild(modal);
+        }
+
+        function downloadCertificatePDF(type) {
+            // Simulation du téléchargement PDF
+            const userName = currentUser.name.replace(/\s+/g, '_');
+            const fileName = `Certificat_${type}_${userName}.pdf`;
+            
+            // Créer un lien de téléchargement simulé
+            const link = document.createElement('a');
+            link.href = '#'; // En réalité, ce serait l'URL du PDF généré
+            link.download = fileName;
+            
+            showToast(`📥 Certificat "${fileName}" téléchargé avec succès !`, 'success');
+            closeModal();
+        }
+
+        function shareCertificate(type) {
+            const shareText = `🎉 Je viens d'obtenir mon certificat ${type === 'leadership' ? 'Leadership Digital' : 'Innovation & Créativité'} avec JCF CONVOX ! 🏆`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Certificat JCF CONVOX',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback pour les navigateurs qui ne supportent pas l'API Web Share
+                navigator.clipboard.writeText(shareText).then(() => {
+                    showToast('📋 Texte copié ! Vous pouvez le partager sur vos réseaux sociaux', 'success');
+                });
+            }
+        }
+
+        function joinDebate(debateId) {
+            const debate = debates.find(d => d.id === debateId);
+            if (debate) {
+                debate.joined = true;
+                debate.participants++;
+                userStats.joinedDebates++;
+                showToast(`🎯 Vous avez rejoint le débat "${debate.title}"`, 'success');
+                showSection('community');
+            }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                chatMessages.push({
+                    user: 'Vous',
+                    message: message,
+                    time: 'À l\'instant',
+                    isOwn: true
+                });
+                
+                input.value = '';
+                userStats.sentMessages++;
+                showSection('community');
+                showToast('💬 Message envoyé !', 'success');
+            }
+        }
+
+        function contactCoach(coachName) {
+            showToast(`📧 Message envoyé au coach !`, 'success');
+        }
+
+        function startCoaching(type) {
+            showToast(`🚀 Module de coaching "${type}" démarré !`, 'success');
+        }
+
+        function changeLanguage() {
+            const lang = document.getElementById('languageSelect').value;
+            currentLanguage = lang;
+            showToast(`🌍 Langue changée vers ${lang.toUpperCase()}`, 'info');
+        }
+
+        // Fonctions utilitaires
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'success' ? 'border-l-4 border-green-500 bg-green-50' : type === 'error' ? 'border-l-4 border-red-500 bg-red-50' : 'border-l-4 border-blue-500 bg-blue-50'}`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <span class="text-sm font-medium ${type === 'success' ? 'text-green-800' : type === 'error' ? 'text-red-800' : 'text-blue-800'}">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        function closeModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => modal.remove());
+        }
+
+        // Fonction pour révéler les comptes de test (accessible via console)
+        function showTestAccounts() {
+            const testAccounts = document.getElementById('testAccounts');
+            if (testAccounts) {
+                testAccounts.classList.remove('hidden');
+                showToast('🧪 Comptes de test révélés', 'info');
+                console.log('Comptes de test disponibles:');
+                console.log('Admin: admin@jcf.com / admin123');
+                console.log('Membre: membre@jcf.com / membre123');
+            }
+        }
+        
+        // Fonction pour masquer les comptes de test
+        function hideTestAccounts() {
+            const testAccounts = document.getElementById('testAccounts');
+            if (testAccounts) {
+                testAccounts.classList.add('hidden');
+                showToast('🔒 Comptes de test masqués', 'info');
+            }
+        }
+        
+        // Détection du type d'appareil
+        function detectDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(userAgent);
+            const isTablet = /ipad|android(?!.*mobile)/.test(userAgent);
+            const isDesktop = !isMobile && !isTablet;
+            
+            return {
+                isMobile,
+                isTablet,
+                isDesktop,
+                isIOS: /iphone|ipad|ipod/.test(userAgent),
+                isAndroid: /android/.test(userAgent),
+                isWindows: /windows/.test(userAgent),
+                isMac: /macintosh|mac os x/.test(userAgent)
+            };
+        }
+        
+        // Optimisations spécifiques par appareil
+        function optimizeForDevice() {
+            const device = detectDevice();
+            
+            if (device.isMobile) {
+                document.body.classList.add('mobile-device');
+                // Ajuster la taille des boutons pour mobile
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    btn.style.minHeight = '48px';
+                    btn.style.fontSize = '16px'; // Évite le zoom sur iOS
+                });
+            }
+            
+            if (device.isIOS) {
+                document.body.classList.add('ios-device');
+                // Optimisations spécifiques iOS
+                document.body.style.webkitUserSelect = 'none';
+            }
+            
+            if (device.isAndroid) {
+                document.body.classList.add('android-device');
+                // Optimisations spécifiques Android
+            }
+            
+            if (device.isDesktop) {
+                document.body.classList.add('desktop-device');
+            }
+            
+            console.log('Appareil détecté:', device);
+        }
+        
+        // Initialisation
+        window.addEventListener('load', function() {
+            optimizeForDevice();
+            showToast('🚀 Plateforme JCF CONVOX chargée avec succès !', 'success');
+            
+            // Message console pour les développeurs
+            console.log('%c🔧 Mode développeur', 'color: #007BFF; font-size: 16px; font-weight: bold;');
+            console.log('Pour révéler les comptes de test, tapez: showTestAccounts()');
+            console.log('Pour masquer les comptes de test, tapez: hideTestAccounts()');
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97b9a9473566738e',t:'MTc1NzI4NDMzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
